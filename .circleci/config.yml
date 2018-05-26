@@ -2,7 +2,18 @@ build_steps: &build_steps
   working_directory: ~/data_bus
   steps:
     - checkout
-    - run: bundle install
+    - run:
+        name: Bundler version
+        command: bundle --version
+    - restore_cache:
+      keys:
+        - v1-bundle-{{ checksum "Gemfile.lock" }}
+        - v1-bundle-
+        - run: bundle check --path=vendor/bundle || bundle install --path=vendor/bundle --jobs=4 --retry=3
+        - save_cache:
+          key: v1-bundle-{{ checksum "Gemfile.lock" }}
+          paths:
+            - vendor/bundle
     - run: bundle exec rake
 
 version: 2
